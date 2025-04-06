@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv='refresh' content='90'/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard - District Science Centre, Purulia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #005a87;
+            --secondary: #0082b5;
+            --accent: #ffcc00;
+            --dark: #0a1929;
+            --light: #f0f8ff;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --card-bg: rgba(0, 90, 135, 0.25);
+            --card-border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0a1929 0%, #1a3a5a 100%);
+            color: var(--light);
+            min-height: 100vh;
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 15px 0;
+            font-size: 2.5rem;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .header img {
+            height: 80px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1800px;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(10, 25, 41, 0.7);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--card-border);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--accent);
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(255, 204, 0, 0.3);
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        h1::after {
+            content: '';
+            display: block;
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            margin: 10px auto 0;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--accent);
+        }
+        
+        .card-header i {
+            font-size: 1.8rem;
+            margin-right: 15px;
+        }
+        
+        .card-header h3 {
+            font-size: 1.4rem;
+            font-weight: 500;
+        }
+        
+        .card-body {
+            font-size: 1.1rem;
+        }
+        
+        /* Temperature Card */
+        .temp-card {
+            grid-column: span 2;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .current-temp {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .temp-value {
+            font-size: 4rem;
+            font-weight: 300;
+            line-height: 1;
+        }
+        
+        .temp-value span {
+            font-size: 2rem;
+            vertical-align: super;
+        }
+        
+        .thermometer {
+            width: 30px;
+            height: 150px;
+            background: linear-gradient(to top, #005a87, #0082b5);
+            border-radius: 20px;
+            position: relative;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+        
+        .mercury {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #ff0000, #ff6600);
+            border-radius: 20px;
+            transition: height 0.5s ease-in-out;
+        }
+        
+        .temp-range {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .high-low {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .high-low-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .high-low-item i {
+            font-size: 1.5rem;
+        }
+        
+        .high-value {
+            color: #ff5252;
+        }
+        
+        .low-value {
+            color: #42a5f5;
+        }
+        
+        /* Sun/Moon Card */
+        .sun-moon-card {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .sun-container {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            border-top: 2px solid var(--accent);
+            border-radius: 150px 150px 0 0;
+            overflow: hidden;
+        }
+        
+        .sun {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent);
+            transition: all 1s ease-in-out;
+            z-index: 2;
+        }
+        
+        .sun-path {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #1a3a5a, #0a1929);
+        }
+        
+        .sun-times {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .sun-time {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .moon-phase {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 15px;
+        }
+        
+        .moon-icon {
+            font-size: 4rem;
+            margin: 10px 0;
+	    animation: pulseGlow 2s infinite;
+    	    filter: brightness(1.2) drop-shadow(0 0 6px #ccc);
+        }
+@keyframes pulseGlow {
+    0%   { filter: brightness(1.1) drop-shadow(0 0 4px #aaa); }
+    50%  { filter: brightness(1.4) drop-shadow(0 0 10px #eee); }
+    100% { filter: brightness(1.1) drop-shadow(0 0 4px #aaa); }
+  }
+        
+        /* Wind Card */
+        .compass-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            background: #0a1929;
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 5px solid var(--card-border);
+        }
+        
+        .compass {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .compass-markers {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .compass-marker {
+            position: absolute;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transform: translate(-50%, -50%);
+        }
+        
+        .needle {
+            position: absolute;
+            width: 2px;
+            height: 50px;
+            background: #ff5252;
+            top: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(0deg);
+            transition: transform 1s cubic-bezier(0.25, 0.1, 0.25, 1);
+            z-index: 2;
+        }
+        
+        .needle::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 15px solid #ff5252;
+            top: -5px;
+            left: -5px;
+        }
+        
+        .center-dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #ff5252;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+        }
+        
+        .wind-info {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .wind-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .wind-stat i {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
+        
+        /* Weather Metrics */
+        .weather-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .metric-card {
+            background: rgba(0, 90, 135, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .metric-card:hover {
+            background: rgba(0, 90, 135, 0.5);
+            transform: translateY(-3px);
+        }
+        
+        .metric-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            text-align: center;
+        }
+        
+        /* Date Time */
+        #dateTime {
+            font-size: 1.5rem;
+            text-align: center;
+            margin: 10px 0;
+            color: var(--accent);
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+        
+        /* Marquee */
+        .facilities-marquee {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 10px 0;
+            margin-top: 30px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 10px;
+            padding: 0px;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .temp-card {
+                grid-column: span 1;
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                font-size: 2rem;
+                padding: 15px 10px;
+            }
+            
+            .header img {
+                height: 60px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .temp-value {
+                font-size: 3rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite ease-in-out;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a1929;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #006494;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src='https://ncsm.gov.in/storage/files/image-7.png' alt='NCSM Logo'>
+        <span>District Science Centre, Purulia</span>
+        <img src='https://ncsm.gov.in/wp-content/uploads/2013/12/NCSM-Logo.png' alt='NCSM Logo'>
+        <img src="https://seeklogo.com/images/B/beti-padhao-beti-bachao-logo-29C4C0AF1B-seeklogo.com.png" alt='Beti Bachao Beti Padhao Logo'>
+    </div>
+    
+    <div class="container">
+        <h1>Live Weather Dashboard</h1>
+        <div id="dateTime"></div>
+        
+        <div class="dashboard-grid">
+            <!-- Temperature Card -->
+            <div class="card temp-card">
+                <div class="current-temp">
+                    <div class="thermometer">
+                        <div class="mercury" style="height: 50%;"></div>
+                    </div>
+                    <div>
+                        <span><iframe width="170" height="140" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=645909595&format=interactive" onload="updateThermometer(20)"></iframe></span>°C
+
+                        <div class="temp-range">
+                            <span>0°C</span>
+                            <span>50°C</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="high-low">
+                    <div class="high-low-item">
+                        <i class="fas fa-temperature-high high-value"></i>
+                        <div>
+                            <div class="metric-label">Today's High</div>
+                           <iframe width="70" height="50" seamless frameborder="0" scrolling="no" 
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=1521069127&amp;format=interactive">
+        </iframe>°C
+                        </div>
+                    </div>
+                    <div class="high-low-item">
+                        <i class="fas fa-temperature-low low-value"></i>
+                        <div>
+                            <div class="metric-label">Today's Low</div>
+                            <iframe width="70" height="50" seamless frameborder="0" scrolling="no" 
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=390404550&amp;format=interactive">
+        </iframe>°C
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sun/Moon Card -->
+            <div class="card sun-moon-card">
+                <div class="card-header">
+                    <i class="fas fa-sun"></i>
+                    <h3>Sun & Moon</h3>
+                </div>
+                <div class="card-body">
+                    <div class="sun-container">
+                        <div class="sun-path"></div>
+                        <div class="sun" id="sun"></div>
+                    </div>
+                    <div class="sun-times">
+                        <div class="sun-time">
+                            <i class="fas fa-sunrise"></i>
+                            <span id="sunset-time">06:12 AM</span>
+                        </div>
+                        <div class="sun-time">
+                            <i class="fas fa-sunset"></i>
+                            <span id="sunrise-time">05:45 PM</span>
+                        </div>
+                    </div>
+                    
+                    <div class="moon-phase">
+                        <div class="moon-icon" id="moon-phase-icon">🌓</div>
+                        <div id="moon-phase-details">First Quarter Moon</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wind Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-wind"></i>
+                    <h3>Wind Conditions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="compass-container">
+                        <div class="compass">
+                            <div class="compass-markers">
+                                <div class="compass-marker" style="top: 10%; left: 50%;">N</div>
+                                <div class="compass-marker" style="top: 50%; left: 90%;">E</div>
+                                <div class="compass-marker" style="top: 90%; left: 50%;">S</div>
+                                <div class="compass-marker" style="top: 50%; left: 10%;">W</div>
+                            </div>
+                            <div class="needle" id="needle"></div>
+                            <div class="center-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wind-info">
+                        <div class="wind-stat">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span id="wind-speed">12 km/h</span>
+                        </div>
+                        <div class="wind-stat">
+                            <i class="fas fa-compass"></i>
+                            <span id="wind-direction">NE 45°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weather Metrics -->
+        <div class="weather-metrics">
+            <div class="metric-card">
+                <i class="fas fa-tint metric-icon"></i>
+                <span><iframe width="80" height="70" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=1848247087&format=interactive"></iframe></span>
+
+                <div class="metric-label">Humidity (%)</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-tachometer-alt metric-icon"></i>
+                <span><iframe width="110" height="70" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=553699442&format=interactive"></iframe></span>
+                <div class="metric-label">Pressure (hPa)</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-sun metric-icon"></i>
+                <span><iframe width="75" height="72" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=1511920214&format=interactive"></iframe></span>
+                 <div class="metric-label">UV Index</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-smog metric-icon"></i>
+                <span><iframe width="170" height="66" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=1744368070&amp;format=interactive"></iframe></span>
+          
+                <div class="metric-label">AQI</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-industry metric-icon"></i>
+                <span><iframe width="100" height="72" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=728241457&format=interactive"></iframe></span>
+           
+                <div class="metric-label">CO Level (PPM)</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-cloud-rain metric-icon"></i>
+                <span><iframe width="100" height="72" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=1536870289&amp;format=interactive"></iframe></span>
+                <div class="metric-label">Rainfall (mm)</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="facilities-marquee">
+        <marquee behavior="scroll" direction="left" scrollamount="8">
+            <i class="fas fa-atom"></i> Children's Gallery • 
+            <i class="fas fa-dna"></i> Life Science Gallery • 
+            <i class="fas fa-flask"></i> Popular Science Gallery • 
+            <i class="fas fa-landmark"></i> Wealth of Purulia Gallery • 
+            <i class="fas fa-seedling"></i> Science Park • 
+            <i class="fas fa-dinosaur"></i> Dinosaur Park • 
+            <i class="fas fa-lightbulb"></i> Innovation Hub • 
+            <i class="fas fa-star"></i> Taramandal Show • 
+            <i class="fas fa-film"></i> 3D Show • 
+            <i class="fas fa-vial"></i> Science Show
+        </marquee>
+    </div>
+    
+    <div class="footer">
+        <div style="display: flex; align-items: center; gap: 0px; margin-bottom: 0px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://dscinnovationhub.github.io/dscinnovationhub/#" 
+             alt="DSC Innovation Hub QR Code"
+             style="width: 90px; height: 90px;">
+        <span style="font-size: 14px; color: white;">
+               **For more information about Innovation Hub Purulia, scan it**
+        </span>
+
+    </div>
+<div text-align: center;>
+        Developed & Powered by Innovation Hub • District Science Centre, Purulia (V2.0)
+    </div>
+    </div>
+
+    <script>
+        // Date and Time Display
+        function displayDateTime() {
+            const now = new Date();
+            
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: true
+            };
+            
+            const dateTimeStr = now.toLocaleDateString('en-IN', options);
+            document.getElementById("dateTime").textContent = dateTimeStr;
+        }
+        
+        setInterval(displayDateTime, 1000);
+        displayDateTime();
+        
+        // Sun Position Calculator
+        async function fetchSunTimes() {
+            try {
+                const response = await fetch('https://api.sunrise-sunset.org/json?lat=23.332&lng=86.365&formatted=0');
+                const data = await response.json();
+                
+                if (data.status === "OK") {
+                    const sunriseUTC = new Date(data.results.sunrise);
+                    const sunsetUTC = new Date(data.results.sunset);
+                    
+                    // Convert to IST (UTC+5:30)
+                     const sunrise = new Date(sunriseUTC.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+        	     const sunset = new Date(sunsetUTC.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+			
+                    
+                    // Format times
+                    const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+                    document.getElementById('sunrise-time').textContent = sunrise.toLocaleTimeString('en-IN', timeOptions);
+                    document.getElementById('sunset-time').textContent = sunset.toLocaleTimeString('en-IN', timeOptions);
+                    
+                    updateSunPosition(sunrise, sunset);
+                    setInterval(() => updateSunPosition(sunrise, sunset), 60000); // Update every minute
+                }
+            } catch (error) {
+                console.error("Error fetching sun data:", error);
+                document.getElementById('sunrise1-time').textContent = "06:00 AM";
+                document.getElementById('sunset1-time').textContent = "06:00 PM";
+            }
+        }
+        
+        function updateSunPosition(sunrise, sunset) {
+            const now = new Date();
+            const nowTime = now.getTime();
+            const sunriseTime = sunrise.getTime();
+            const sunsetTime = sunset.getTime();
+            
+            // If it's nighttime, hide the sun
+            if (nowTime < sunriseTime || nowTime > sunsetTime) {
+                document.getElementById('sun').style.opacity = '0';
+                return;
+            }
+            
+            document.getElementById('sun').style.opacity = '1';
+            
+            const totalDaylight = sunsetTime - sunriseTime;
+            const elapsedTime = nowTime - sunriseTime;
+            
+            let progress = elapsedTime / totalDaylight;
+            progress = Math.max(0, Math.min(progress, 1)); // Clamp between 0 and 1
+            
+            const radius = 40;
+            const centerX = 50; // Percentage
+            const centerY = 50; // Percentage
+            
+            // Calculate position on semicircle (0 at sunrise, π at sunset)
+            const angle = progress * Math.PI;
+            const sunX = centerX + radius * Math.cos(angle);
+            const sunY = centerY - radius * Math.sin(angle);
+            
+            const sun = document.getElementById('sun');
+            sun.style.left = `calc(${sunX}% - 12.5px)`;
+            sun.style.top = `calc(${sunY}% - 12.5px)`;
+            
+            // Change sun color based on time of day
+            if (progress < 0.25 || progress > 0.75) {
+                sun.style.background = '#ff9900'; // Orange at sunrise/sunset
+                sun.style.boxShadow = '0 0 30px #ff9900';
+            } else {
+                sun.style.background = '#ffcc00'; // Yellow at midday
+                sun.style.boxShadow = '0 0 40px #ffcc00';
+            }
+        }
+        
+        // Moon Phase Calculator
+        function calculateMoonPhase(date) {
+            const referenceDate = new Date('2000-01-06T18:14:00Z'); // Reference new moon date
+            const lunarCycle = 29.53058867 * 24 * 60 * 60 * 1000; // Lunar cycle in milliseconds
+
+            
+             const diff = date - referenceDate;
+            const phase = (diff % lunarCycle) / lunarCycle; // Normalize phase (0 to 1)
+
+
+            
+           const phases = [
+    { icon: '🌑', name: 'New Moon', min: 0.00, max: 0.02 },
+    { icon: '🌒', name: 'Waxing Crescent (Early)', min: 0.02, max: 0.07 },
+    { icon: '🌒', name: 'Waxing Crescent (Mid)', min: 0.07, max: 0.125 },
+    { icon: '🌒', name: 'Waxing Crescent (Late)', min: 0.125, max: 0.175 },
+    { icon: '🌓', name: 'First Quarter', min: 0.175, max: 0.25 },
+    { icon: '🌔', name: 'Waxing Gibbous (Early)', min: 0.25, max: 0.325 },
+    { icon: '🌔', name: 'Waxing Gibbous (Mid)', min: 0.325, max: 0.375 },
+    { icon: '🌔', name: 'Waxing Gibbous (Late)', min: 0.375, max: 0.425 },
+    { icon: '🌕', name: 'Full Moon', min: 0.425, max: 0.52 },
+    { icon: '🌖', name: 'Waning Gibbous (Early)', min: 0.52, max: 0.575 },
+    { icon: '🌖', name: 'Waning Gibbous (Mid)', min: 0.575, max: 0.625 },
+    { icon: '🌖', name: 'Waning Gibbous (Late)', min: 0.625, max: 0.675 },
+    { icon: '🌗', name: 'Last Quarter', min: 0.675, max: 0.75 },
+    { icon: '🌘', name: 'Waning Crescent (Early)', min: 0.75, max: 0.825 },
+    { icon: '🌘', name: 'Waning Crescent (Mid)', min: 0.825, max: 0.875 },
+    { icon: '🌘', name: 'Waning Crescent (Late)', min: 0.875, max: 0.925 },
+    { icon: '🌑', name: 'New Moon', min: 0.925, max: 1.00 }
+];
+
+            
+            const currentPhase = phases.find(p => phase >= p.min && phase < p.max);
+            return currentPhase || {icon: '🌑', name: 'New Moon'};
+        }
+        
+        function updateMoonPhase() {
+            const date = new Date();
+        const moonData = calculateMoonPhase(date);
+
+            document.getElementById('moon-phase-icon').textContent = moonData.icon;
+            document.getElementById('moon-phase-details').textContent = moonData.name;
+        }
+        
+        // Wind Data
+        async function fetchWindData() {
+            try {
+                const apiKey = "ee67b3fc33053ea53a1bd9a0b2181327"; // Replace with your API key
+            const lat = 23.332;  // Latitude for Purulia, WB
+            const lon = 86.365;  // Longitude for Purulia, WB
+                
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`);
+            const data = await response.json();
+                if (data.wind) {
+                    const windSpeed = data.wind.speed;
+                    const windDirection = data.wind.deg || 0;
+                    
+                    // Convert m/s to km/h
+                    const windSpeedKmh = data.wind.speed;
+                   
+                    document.getElementById("wind-speed").textContent = `${windSpeedKmh} km/h`;
+                    
+                    // Convert degrees to compass direction
+                    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 
+                                      'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+                    const index = Math.round(windDirection / 22.5) % 16;
+                    const compassDir = directions[index];
+                    
+                    document.getElementById("wind-direction").textContent = `${compassDir} ${Math.round(windDirection)}°`;
+                    
+                    // Rotate needle (subtract 180 because our needle points south by default)
+                    document.getElementById("needle").style.transform = `translate(-50%, -100%) rotate(${windDirection - 180}deg)`;
+                }
+            } catch (error) {
+                console.error("Error fetching wind data:", error);
+                document.getElementById("wind-speed").textContent = "-- km/h";
+                document.getElementById("wind-direction").textContent = "N 0°";
+            }
+        }
+        
+        // Temperature Simulation (replace with real data)
+        function simulateTemperature() {
+            const now = new Date();
+            const hours = now.getHours();
+            
+            // Simulate temperature based on time of day
+            let temp;
+            if (hours >= 5 && hours < 12) {
+                // Morning - rising temperature
+                temp = 20 + (hours - 5) * 1.5;
+            } else if (hours >= 12 && hours < 16) {
+                // Afternoon - peak temperature
+                temp = 30 + (hours - 12) * 0.5;
+            } else if (hours >= 16 && hours < 20) {
+                // Evening - cooling down
+                temp = 32 - (hours - 16) * 1;
+            } else {
+                // Night - cooler
+                temp = 20 - (hours / 4);
+            }
+            
+            // Add some random variation
+            temp += Math.random() * 2 - 1;
+            temp = Math.round(temp * 10) / 10;
+            
+            // Update display
+            document.querySelector('.temp-value').innerHTML = `${temp}<span>°C</span>`;
+            
+            // Update thermometer
+            const thermometer = document.querySelector('.mercury');
+            const height = ((temp + 10) / 50) * 100; // Scale -10°C to 40°C to 0-100%
+            thermometer.style.height = `${height}%`;
+            
+            // Update thermometer color
+            if (temp < 10) {
+                thermometer.style.background = '#42a5f5'; // Cold blue
+            } else if (temp < 25) {
+                thermometer.style.background = '#4caf50'; // Pleasant green
+            } else if (temp < 35) {
+                thermometer.style.background = '#ff9800'; // Warm orange
+            } else {
+                thermometer.style.background = '#f44336'; // Hot red
+            }
+        }
+        
+        // Initialize all functions
+        window.onload = function() {
+            fetchSunTimes();
+            updateMoonPhase();
+            fetchWindData();
+            simulateTemperature();
+            
+            // Update wind data every 5 minutes
+            setInterval(fetchWindData, 300000);
+            
+            // Update temperature every minute
+            setInterval(simulateTemperature, 60000);
+        };
+
+
+
+    </script>
+</body>
+</html>
