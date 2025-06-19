@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv='refresh' content='90'/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard - District Science Centre, Purulia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+        <img src='https://ncsm.gov.in/storage/files/image-7.png' alt='NCSM Logo'>
+        <span>District Science Centre, Purulia</span>
+        <img src='https://ncsm.gov.in/wp-content/uploads/2013/12/NCSM-Logo.png' alt='NCSM Logo'>
+        <img src="https://seeklogo.com/images/B/beti-padhao-beti-bachao-logo-29C4C0AF1B-seeklogo.com.png" alt='Beti Bachao Beti Padhao Logo'>
+    </div>
+    
+    <div class="container">
+        <h1>Live Weather Dashboard</h1>
+        <div id="dateTime"></div>
+        
+        <div class="dashboard-grid">
+            <!-- Temperature Card -->
+            <div class="card temp-card">
+                <div class="current-temp">
+                    <div class="thermometer">
+                        <div class="mercury" style="height: 50%;"></div>
+                    </div>
+                    <div>
+                        <span><iframe width="170" height="140" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=645909595&format=interactive" onload="updateThermometer(20)"></iframe></span>°C
+
+                        <div class="temp-range">
+                            <span>0°C</span>
+                            <span>50°C</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="high-low">
+                    <div class="high-low-item">
+                        <i class="fas fa-temperature-high high-value"></i>
+                        <div>
+                            <div class="metric-label">Today's High</div>
+                           <iframe width="70" height="50" seamless frameborder="0" scrolling="no" 
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=1521069127&amp;format=interactive">
+        </iframe>°C
+                        </div>
+                    </div>
+                    <div class="high-low-item">
+                        <i class="fas fa-temperature-low low-value"></i>
+                        <div>
+                            <div class="metric-label">Today's Low</div>
+                            <iframe width="70" height="50" seamless frameborder="0" scrolling="no" 
+            src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=390404550&amp;format=interactive">
+        </iframe>°C
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sun/Moon Card -->
+            <div class="card sun-moon-card">
+                <div class="card-header">
+                    <i class="fas fa-sun"></i>
+                    <h3>Sun & Moon</h3>
+                </div>
+                <div class="card-body">
+                    <div class="sun-container">
+                        <div class="sun-path"></div>
+                        <div class="sun" id="sun"></div>
+                    </div>
+                    <div class="sun-times">
+                        <div class="sun-time">
+                            <i class="fas fa-sunrise"></i>
+                            <span id="sunset-time">06:12 AM</span>
+                        </div>
+                        <div class="sun-time">
+                            <i class="fas fa-sunset"></i>
+                            <span id="sunrise-time">05:45 PM</span>
+                        </div>
+                    </div>
+                    
+                    <div class="moon-phase">
+                        <div class="moon-icon" id="moon-phase-icon">🌓</div>
+                        <div id="moon-phase-details">First Quarter Moon</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Wind Card -->
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-wind"></i>
+                    <h3>Wind Conditions</h3>
+                </div>
+                <div class="card-body">
+                    <div class="compass-container">
+                        <div class="compass">
+                            <div class="compass-markers">
+                                <div class="compass-marker" style="top: 10%; left: 50%;">N</div>
+                                <div class="compass-marker" style="top: 50%; left: 90%;">E</div>
+                                <div class="compass-marker" style="top: 90%; left: 50%;">S</div>
+                                <div class="compass-marker" style="top: 50%; left: 10%;">W</div>
+                            </div>
+                            <div class="needle" id="needle"></div>
+                            <div class="center-dot"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="wind-info">
+                        <div class="wind-stat">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span id="wind-speed">12 km/h</span>
+                        </div>
+                        <div class="wind-stat">
+                            <i class="fas fa-compass"></i>
+                            <span id="wind-direction">NE 45°</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Weather Metrics -->
+        <div class="weather-metrics">
+            <div class="metric-card">
+                <i class="fas fa-tint metric-icon"></i>
+                <span><iframe width="80" height="70" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=1848247087&format=interactive"></iframe></span>
+
+                <div class="metric-label">Humidity (%)</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-tachometer-alt metric-icon"></i>
+                <span><iframe width="110" height="70" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=553699442&format=interactive"></iframe></span>
+                <div class="metric-label">Pressure (hPa)</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-sun metric-icon"></i>
+                <span><iframe width="75" height="72" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=1511920214&format=interactive"></iframe></span>
+                 <div class="metric-label">UV Index</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-smog metric-icon"></i>
+                <span><iframe width="170" height="66" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSKKF7Uzr3lH_y-HoFkSTjTPtmiZIPR5b-NfJfnRY5JJFInAvM9SSCHwiYv2y3Tt39gs6CXB4I8msEp/pubchart?oid=1744368070&amp;format=interactive"></iframe></span>
+          
+                <div class="metric-label">AQI</div>
+            </div>
+            
+            <div class="metric-card">
+                <i class="fas fa-industry metric-icon"></i>
+                <span><iframe width="100" height="72" seamless frameborder="0" scrolling="no" src="https://docs.google.com/spreadsheets/d/1hqBLjIAzCeQd4y2qMriQ_yFkywHpkh5QAoBgTN-8ihQ/pubchart?oid=728241457&format=interactive"></iframe></span>
+           
+                <div class="metric-label">CO Level (PPM)</div>
+            </div>
+            
+            <!-- Current Rainfall with Animation Container -->
+<div class="metric-card rain-card">
+    <div class="weather-icon-container">
+        <i class="fas fa-cloud-rain metric-icon"></i>
+        <div class="rain-animation" id="current-rain-animation"></div>
+    </div>
+    <span id="current-rainfall">-- mm</span>
+    <div class="metric-label" id="rain-intensity-label">Loading...</div>
+</div>
+        </div>
+    </div>
+    
+    <div class="facilities-marquee">
+        <marquee behavior="scroll" direction="left" scrollamount="8">
+            <i class="fas fa-atom"></i> Children's Gallery • 
+            <i class="fas fa-dna"></i> Life Science Gallery • 
+            <i class="fas fa-flask"></i> Popular Science Gallery • 
+            <i class="fas fa-landmark"></i> Wealth of Purulia Gallery • 
+            <i class="fas fa-seedling"></i> Science Park • 
+            <i class="fas fa-dinosaur"></i> Dinosaur Park • 
+            <i class="fas fa-lightbulb"></i> Innovation Hub • 
+            <i class="fas fa-star"></i> Taramandal Show • 
+            <i class="fas fa-film"></i> 3D Show • 
+            <i class="fas fa-vial"></i> Science Show
+        </marquee>
+    </div>
+    
+    <div class="footer">
+        <div style="display: flex; align-items: center; gap: 0px; margin-bottom: 0px;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://dscinnovationhub.github.io/dscinnovationhub/#" 
+             alt="DSC Innovation Hub QR Code"
+             style="width: 90px; height: 90px;">
+        <span style="font-size: 14px; color: white;">
+               **For more information about Innovation Hub Purulia, scan it**
+        </span>
+    </div>
+    <div text-align: center;>
+        Developed & Powered by Innovation Hub • District Science Centre, Purulia (V2.0)
+    </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
